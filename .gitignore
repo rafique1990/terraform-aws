@@ -4,8 +4,9 @@
 .terraform/
 .terraform.lock.hcl
 crash.log
-
+generated/*
 # Ignore environment-specific files
 *.tfvars
 terraform.tfvars
 terraform.tfvars.json
+git push -u origin main

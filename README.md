@@ -174,16 +174,58 @@ To verify the complete setup and ensure everything is working correctly, follow 
 
    This will generate Terraform configuration files in the current directory.
 
-4. Validate Terraform configuration:
+4. **Run the script**: After running the `terraformer import` command, a directory called `generated` will be created. Now, run the `copy_tf_files.sh` script to organize the Terraform configuration files:
 
-   You can use the following command to validate your Terraform configuration:
+   ```bash
+   ./copy_tf_files.sh
+   ```
+
+5. Validate Terraform configuration:
+
+   After organizing the Terraform files, initialize and validate your Terraform setup:
 
    ```bash
    terraform init
+   terraform validate
    terraform plan
    ```
 
    This will initialize the Terraform configuration and show a plan of the infrastructure changes.
+
+---
+
+## Debugging
+
+If you run into issues during the process, here are some common errors and troubleshooting tips:
+
+### Error: `Invalid AWS credentials`
+- Ensure that your `AWS Access Key ID` and `AWS Secret Access Key` are correctly set up in AWS CLI.
+- Use `aws configure` to re-enter your credentials.
+
+### Error: `No Terraform configuration found`
+- Make sure you're in the directory where the `terraformer` command is executed. The `terraformer` tool will generate the Terraform configuration files in the current directory.
+
+### Error: `Error: Provider configuration not present`
+- Ensure that your Terraform files are correctly initialized and that the `provider` block is properly configured for AWS.
+
+If you encounter other errors, check the Terraformer [GitHub Issues](https://github.com/GoogleCloudPlatform/terraformer/issues) for possible solutions.
+
+---
+
+## Moving Files for Each Resource
+
+Once the resources are imported into your working directory, they will be organized into specific directories based on the resources imported. To move these files into a different directory or organize them according to your needs:
+
+1. Identify the resource directories created by Terraformer. For example:
+   - `aws_s3`
+   - `aws_ec2`
+   - `aws_vpc`
+
+2. Move the files into your desired folder structure. You can do this manually or with a script, depending on the number of resources you are working with.
+
+3. After organizing the files, make sure that all Terraform configuration files are in the same directory and that your `main.tf` file correctly references them.
+
+4. Use `terraform init` and `terraform plan` to ensure that Terraform correctly recognizes the resources after they are moved.
 
 ---
 

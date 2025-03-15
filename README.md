@@ -1,4 +1,3 @@
-
 # Terraformer AWS Migration Project
 
 ## Project Purpose
@@ -110,11 +109,7 @@ To securely interact with AWS using Terraform, it’s recommended to create a ne
 
 ### Step 5: Download and Install Terraformer
 
-1. Download the latest release of `terraformer-all-linux-amd64` (410 MB) from the official GitHub repository:
-
-   [Download Terraformer](https://github.com/GoogleCloudPlatform/terraformer/releases/download/v0.8.20/terraformer-all-linux-amd64)
-
-   Or use `wget` to download it:
+1. Download the latest release of `terraformer-all-linux-amd64` from the official GitHub repository:
 
    ```bash
    wget https://github.com/GoogleCloudPlatform/terraformer/releases/download/v0.8.20/terraformer-all-linux-amd64
@@ -138,94 +133,89 @@ To securely interact with AWS using Terraform, it’s recommended to create a ne
    terraformer --version
    ```
 
-   This should display the version of Terraformer.
+### Step 6: Running Terraformer and Organizing Files
 
-### Step 6: Verify the Complete Setup
-
-To verify the complete setup and ensure everything is working correctly, follow these steps:
-
-1. Check AWS CLI configuration:
-
-   Run the following command to check if the AWS CLI is configured correctly:
-
-   ```bash
-   aws sts get-caller-identity
-   ```
-
-   This should return the IAM user’s identity.
-
-2. Check Terraform installation:
-
-   Run the following command to verify Terraform:
-
-   ```bash
-   terraform --version
-   ```
-
-   This should return the installed version of Terraform.
-
-3. Run a Terraformer import:
-
-   You can now use Terraformer to import AWS resources. For example, to import EC2 instances, S3 buckets, DynamoDB, VPC, and subnets, run the following command:
+1. Run a Terraformer import:
 
    ```bash
    terraformer import aws --resources=ec2,db,s3,vpc,subnet --region=us-east-1
    ```
 
-   This will generate Terraform configuration files in the current directory.
+2. Terraformer will create a directory `generated/aws/` with subdirectories such as:
 
-4. **Run the script**: After running the `terraformer import` command, a directory called `generated` will be created. Now, run the `copy_tf_files.sh` script to organize the Terraform configuration files:
-
-   ```bash
-   ./copy_tf_files.sh
+   ```
+   generated/aws/
+   ├── ec2/
+   ├── db/
+   ├── s3/
+   ├── vpc/
+   ├── subnet/
    ```
 
-5. Validate Terraform configuration:
+3. Run the **copy script** `copy_tf_files.sh` to move `.tf` files into a `combined/` directory:
 
-   After organizing the Terraform files, initialize and validate your Terraform setup:
+   ```bash
+   bash copy_tf_files.sh
+   ```
+
+4. The final directory structure will be:
+
+   ```
+   combined/
+   ├── ec2.tf
+   ├── db.tf
+   ├── s3.tf
+   ├── vpc.tf
+   ├── subnet.tf
+   ├── provider.tf
+   ├── version.tf
+   ```
+
+### Step 7: Running Terraform
+
+1. Navigate to the `combined/` directory and initialize Terraform:
 
    ```bash
    terraform init
-   terraform validate
-   terraform plan
    ```
 
-   This will initialize the Terraform configuration and show a plan of the infrastructure changes.
+2. Validate the configuration:
 
----
+   ```bash
+   terraform validate
+   ```
+
+3. Apply the configuration to create AWS resources:
+
+   ```bash
+   terraform apply
+   ```
 
 ## Debugging
 
-If you run into issues during the process, here are some common errors and troubleshooting tips:
-
 ### Error: `Invalid AWS credentials`
-- Ensure that your `AWS Access Key ID` and `AWS Secret Access Key` are correctly set up in AWS CLI.
-- Use `aws configure` to re-enter your credentials.
+- Ensure that AWS credentials are configured correctly: `aws configure`
 
 ### Error: `No Terraform configuration found`
-- Make sure you're in the directory where the `terraformer` command is executed. The `terraformer` tool will generate the Terraform configuration files in the current directory.
+- Ensure the `combined/` directory has `.tf` files before running `terraform apply`.
 
 ### Error: `Error: Provider configuration not present`
-- Ensure that your Terraform files are correctly initialized and that the `provider` block is properly configured for AWS.
+- Ensure `provider.tf` exists and contains:
 
-If you encounter other errors, check the Terraformer [GitHub Issues](https://github.com/GoogleCloudPlatform/terraformer/issues) for possible solutions.
+   ```hcl
+   terraform {
+     required_providers {
+       aws = {
+         source  = "hashicorp/aws"
+         version = "~> 5.0"
+       }
+     }
+   }
 
----
-
-## Moving Files for Each Resource
-
-Once the resources are imported into your working directory, they will be organized into specific directories based on the resources imported. To move these files into a different directory or organize them according to your needs:
-
-1. Identify the resource directories created by Terraformer. For example:
-   - `aws_s3`
-   - `aws_ec2`
-   - `aws_vpc`
-
-2. Move the files into your desired folder structure. You can do this manually or with a script, depending on the number of resources you are working with.
-
-3. After organizing the files, make sure that all Terraform configuration files are in the same directory and that your `main.tf` file correctly references them.
-
-4. Use `terraform init` and `terraform plan` to ensure that Terraform correctly recognizes the resources after they are moved.
+   provider "aws" {
+     region = "us-east-1"
+   }
+   ```
 
 ---
 
